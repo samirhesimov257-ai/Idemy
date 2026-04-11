@@ -9,7 +9,11 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -19,12 +23,12 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Ad və soyad boş ola bilməz")
+    @NotBlank
     private String fullName;
 
     @Email
@@ -42,5 +46,21 @@ public class User {
 
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
     private List<Course> authoredCourses;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Rolu "ROLE_STUDENT" və ya "ROLE_INSTRUCTOR" kimi qaytarır
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return email; // Login üçün email istifadə edəcəyik
+    }
+
+    @Override
+    public String getPassword() {
+        return password; // Sənin yuxarıdakı password field-in
+    }
 
 }

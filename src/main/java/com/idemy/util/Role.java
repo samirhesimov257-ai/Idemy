@@ -1,6 +1,7 @@
 package com.idemy.util;
 
 public enum Role {
-    USER_ROLE
-
+    ROLE_STUDENT,
+    ROLE_INSTRUCTOR,
+    ROLE_ADMIN
 }
