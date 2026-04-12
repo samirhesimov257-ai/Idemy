@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -46,11 +45,9 @@ public class AuthenticationService {
 
         // Refresh token-i bazaya da yadda saxla (yeni metod yazmalısan bunun üçün)
 //        saveRefreshToken(user, refreshToken);
-
         return AuthenticationResponse.builder()
                 .accessToken(accessToken+"\n")
                 .refreshToken(refreshToken)
-
                 .build();
     }
 //    public String login(LoginRequest request) {
