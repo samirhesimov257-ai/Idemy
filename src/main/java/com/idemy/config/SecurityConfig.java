@@ -25,8 +25,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/courses/**").hasRole("INSTRUCTOR")// Login/Register hər kəsə açıqdır
-                        .anyRequest().authenticated() // Digər hər şey bağlıdır
+                        .requestMatchers("/api/v1/courses/**").hasRole("INSTRUCTOR")
+//                                .requestMatchers("/uploads/**").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
