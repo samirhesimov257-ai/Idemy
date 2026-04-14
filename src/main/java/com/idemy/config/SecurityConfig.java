@@ -3,6 +3,7 @@ package com.idemy.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,7 +26,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/courses/**").hasRole("INSTRUCTOR")
+                                .requestMatchers(HttpMethod.POST,"/api/v1/courses/**").hasRole("INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET,"/api/v1/courses/my-courses").hasRole("INSTRUCTOR")
+                                .requestMatchers(HttpMethod.GET,"/api/v1/courses/**").permitAll()
+                                .requestMatchers(HttpMethod.DELETE,"/api/v1/courses/**").hasRole("INSTRUCTOR")
+                                .requestMatchers(HttpMethod.PATCH,"/api/v1/courses/**").hasRole("INSTRUCTOR")
+                                .requestMatchers("/api/v1/enrollments/**").authenticated()
 //                                .requestMatchers("/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -7,6 +7,7 @@ import com.idemy.dao.repository.EnrollmentRepository;
 import com.idemy.dao.repository.UserRepository;
 import com.idemy.dto.request.CourseCreateRequest;
 import com.idemy.dto.responce.CourseResponse;
+import com.idemy.mapper.CourseMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private  final CourseMapper courseMapper ;
 
     public CourseResponse createCourse(CourseCreateRequest request) {
         // 1. Token-dən gələn email vasitəsilə müəllimi tapırıq
@@ -39,15 +41,13 @@ public class CourseService {
         // 3. Bazaya yaz
         Course savedCourse = courseRepository.save(course);
 
-        return mapToResponse(savedCourse);/// BUUNA BAXARSAN NIYE GERI QAYTARIRIQ
+        return courseMapper.toDto(savedCourse);/// BUUNA BAXARSAN NIYE GERI QAYTARIRIQ
     }
 
     public List<CourseResponse> getMyCourses() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return courseRepository.findByInstructorEmail(email)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+        return courseMapper.listToDtoList(courseRepository.findByInstructorEmail(email));
+
     }
     @Transactional
     public CourseResponse updateCourse(Long id, CourseCreateRequest request) {
@@ -67,7 +67,7 @@ public class CourseService {
         course.setPrice(request.getPrice());
 
         // 4. Yadda saxla və cavabı qaytar
-        return mapToResponse(courseRepository.save(course));
+        return courseMapper.toDto(courseRepository.save(course));
     }
 
     public void deleteCourse(Long id) {
@@ -83,19 +83,5 @@ public class CourseService {
 
         // 3. Sil
         courseRepository.delete(course);
-    }
-
-    // Entity-ni DTO-ya çevirən köməkçi metod
-    private CourseResponse mapToResponse(Course course) {
-        long studentCount = enrollmentRepository.countByCourseId(course.getId());
-        
-        return CourseResponse.builder()
-                .id(course.getId())
-                .title(course.getTitle())
-                .description(course.getDescription())
-                .price(course.getPrice())
-                .instructorName(course.getInstructor().getFullName())
-                .studentCount(studentCount)
-                .build();
     }
 }

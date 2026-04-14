@@ -1,11 +1,14 @@
 package com.idemy.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +38,20 @@ public class FileService {
             return fileName; // Bazada saxlamalı olduğumuz adı qaytarır
         } catch (IOException e) {
             throw new RuntimeException("Fayl yüklənərkən xəta baş verdi: " + e.getMessage());
+        }
+    }
+    public Resource loadFileAsResource(String fileName) {
+        try {
+            Path filePath = Paths.get("uploads/videos/").resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Video faylı tapılmadı və ya oxuna bilmir!");
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Fayl yolu xətası: " + e.getMessage());
         }
     }
 }
