@@ -47,6 +47,18 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
     private List<Course> authoredCourses;
 
+    // Tələbənin qeydiyyatdan keçdiyi kurslar (Day 5-dən)
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
+    private List<Enrollment> enrollments;
+
+    // İstifadəçinin yazdığı bütün rəylər (Day 6)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Review> reviews;
+
+    // İstifadəçinin dərslərdəki proqresi (Day 6)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserProgress> progressEntries;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Rolu "ROLE_STUDENT" və ya "ROLE_INSTRUCTOR" kimi qaytarır

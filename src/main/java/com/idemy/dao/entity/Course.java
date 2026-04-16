@@ -42,6 +42,9 @@ public class Course {
     @OrderBy("orderIndex ASC")
     private List<Section> sections;
 
+    public Course(Long courseId) {
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
