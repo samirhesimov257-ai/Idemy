@@ -8,10 +8,11 @@ import java.util.List;
 
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SectionResponse {
     private Long id;
     private String title;
-    private Integer orderIndex;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<LessonResponse> lessons; // Bölmənin daxilindəki dərslər
+//    private Integer orderIndex;
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private List<LessonResponse> lessons;
 }

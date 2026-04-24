@@ -36,7 +36,7 @@ public class JwtService {
 
     // Access Token yaradan metod (15 dəqiqə)
     public String generateAccessToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, 1000 * 60 * 15);
+        return buildToken(new HashMap<>(), userDetails, 1000 * 60 * 60);
     }
 
     // Refresh Token yaradan metod (məsələn, 7 gün)

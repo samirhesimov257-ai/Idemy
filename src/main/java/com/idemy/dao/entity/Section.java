@@ -9,7 +9,11 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
-@Table(name = "sections")
+@Table(name = "sections"
+//        , uniqueConstraints = {
+//@UniqueConstraint(columnNames = {"course_id", "orderIndex"})
+//}
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

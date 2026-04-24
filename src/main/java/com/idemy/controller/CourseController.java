@@ -3,6 +3,7 @@ package com.idemy.controller;
 import com.idemy.dto.request.CourseCreateRequest;
 import com.idemy.dto.responce.CourseResponse;
 import com.idemy.service.CourseService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,18 +19,21 @@ public class CourseController {
 
     private final CourseService courseService;
 
+    @Operation(summary = "kurs yaratmaq ucun")
     @PostMapping
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<CourseResponse> createCourse(@RequestBody CourseCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(courseService.createCourse(request));
-
     }
 
+    @Operation(summary = "Muellimin oz kurslarina baxmasi ucun")
     @GetMapping("/my-courses")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<List<CourseResponse>> getMyCourses() {
         return ResponseEntity.ok(courseService.getMyCourses());
     }
+
+    @Operation(summary = "kurslari yenilemek ucun")
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<CourseResponse> updateCourse(
@@ -38,6 +42,7 @@ public class CourseController {
         return ResponseEntity.ok(courseService.updateCourse(id, request));
     }
 
+    @Operation(summary = "Kusrlari silmek ucun")
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('INSTRUCTOR')")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {

@@ -22,6 +22,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "OR LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Course> searchByKeyword(@Param("keyword") String keyword);
 
+    List<Course> findByInstructorFullNameContainingIgnoreCase(String fullName);
+
     // Müəyyən qiymət aralığında kurslar
     List<CourseResponse> findByPriceBetween(BigDecimal min, BigDecimal max);
 

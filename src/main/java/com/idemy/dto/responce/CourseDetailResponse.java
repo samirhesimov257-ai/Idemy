@@ -3,17 +3,14 @@ package com.idemy.dto.responce;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data
 @Builder
-public class CourseResponse {
+public class CourseDetailResponse {
     private Long id;
     private String title;
     private String description;
-    private BigDecimal price;
     private String instructorName;
-    private Long studentCount;
-    private List<SectionResponse> sections;
+    private List<SectionResponse> sections; // Sillabus buradadır
 }

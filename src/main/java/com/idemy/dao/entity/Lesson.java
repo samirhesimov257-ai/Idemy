@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
+
 @Entity
 @Table(name = "lessons")
 @Data
@@ -25,7 +27,7 @@ public class Lesson {
 
     private String videoUrl; // AWS S3-dən gələn video linki burada olacaq
 
-    private Integer durationInMinutes; // Dərsin müddəti
+    private Duration durationInMinutes; // Dərsin müddəti
 
     private Integer orderIndex; // Bölmə daxilində neçənci dərsdir
 

@@ -23,7 +23,7 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
         service.register(request);
-        return ResponseEntity.ok("istifadece daxil edildi");
+        return ResponseEntity.ok("istifadeci daxil edildi");
     }
 
     @PostMapping("/login")

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SectionRepository extends JpaRepository<Section,Long> {
     long countByCourseId(Long courseId);
+    boolean existsByCourseIdAndOrderIndex(Long courseId, Integer orderIndex);
 }

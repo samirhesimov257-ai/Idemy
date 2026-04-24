@@ -14,7 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // "/uploads/**" ilə başlayan link gələndə get bizim qovluqdan axtar
         registry.addResourceHandler("/uploads/videos/**")
                 .addResourceLocations("file:" + uploadDir + "/");
     }

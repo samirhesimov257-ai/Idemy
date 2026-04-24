@@ -21,52 +21,31 @@ public class LessonService {
     private final FileService fileService;
 
     public Resource getLessonVideoResource(Long lessonId) {
-        // 1. Dərsi tap
-        Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Dərs tapılmadı"));
+        // 1. Cari dərsi tap
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow();
 
-        // 2. Cari istifadəçini tap
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("İstifadəçi tapılmadı"));
-
-        // 3. İcazə yoxlanışı (Paywall Logic)
-        // A) İstifadəçi bu kursun müəllimidir?
-        boolean isInstructor = lesson.getSection().getCourse().getInstructor().getEmail().equals(email);
-        
-        // B) İstifadəçi bu kursu satın alıb?
-        boolean isEnrolled = enrollmentRepository.existsByStudentIdAndCourseId(user.getId(), lesson.getSection().getCourse().getId());
-
-        if (isInstructor || isEnrolled) {
-            // İcazə var -> Videonu gətir
-            return fileService.loadFileAsResource(lesson.getVideoUrl());
-        } else {
-            // İcazə yoxdur
-            throw new RuntimeException("Bu videonu izləmək üçün kursu satın almalısınız!");
-        }
-    }
-    public Resource getLessonVideo(Long lessonId) {
-        // 1. Tələbənin izləmək istədiyi dərsi tapırıq
-        Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Dərs tapılmadı"));
-
-        // 2. Dərsin aid olduğu KURS-u tapırıq (Zəncir: Lesson -> Section -> Course)
-        // Sənin entity-də line 34-də 'section' var.
+        // 2. Cari kursu tap (zəncirvari)
         Course course = lesson.getSection().getCourse();
 
-        // 3. İndi kursun ID-si əlimizdədir. Alışı yoxlaya bilərik.
+        // 3. Cari istifadəçini tap
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByEmail(email).orElseThrow();
 
-        boolean isEnrolled = enrollmentRepository.existsByStudentIdAndCourseId(
-                currentUser.getId(),
-                course.getId() // Bax, burada məhz KURSU alıb-almadığını yoxlayırıq
-        );
+        // Əgər istifadəçi anonimdirsə (permitAll olsa belə), email "anonymousUser" gələcək.
+        if (email.equals("anonymousUser")) {
+            throw new RuntimeException("Videonu izləmək üçün daxil olmalısınız!");
+        }
 
-        if (isEnrolled || course.getInstructor().getEmail().equals(email)) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        // 4. ALIB-ALMADIĞINI YOXLA (Əsas müdafiə)
+        boolean isEnrolled = enrollmentRepository.existsByStudentIdAndCourseId(user.getId(), course.getId());
+        boolean isInstructor = course.getInstructor().getEmail().equals(email);
+
+        if (isEnrolled || isInstructor) {
             return fileService.loadFileAsResource(lesson.getVideoUrl());
         } else {
-            throw new RuntimeException("Bu kursu satın almamısınız!");
+            throw new RuntimeException("Bu videonu izləmək üçün kursu satın almalısınız!");
         }
+
     }
 }

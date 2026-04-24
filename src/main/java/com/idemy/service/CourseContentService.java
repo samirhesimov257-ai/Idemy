@@ -6,9 +6,12 @@ import com.idemy.dao.entity.Section;
 import com.idemy.dao.repository.CourseRepository;
 import com.idemy.dao.repository.LessonRepository;
 import com.idemy.dao.repository.SectionRepository;
+import com.idemy.dto.request.LessonRequest;
 import com.idemy.dto.request.SectionRequest;
 import com.idemy.dto.responce.LessonResponse;
 import com.idemy.dto.responce.SectionResponse;
+import com.idemy.mapper.LessonMapper;
+import com.idemy.mapper.SectionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,10 +26,16 @@ public class CourseContentService {
     private final SectionRepository sectionRepository;
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
+    private final LessonMapper lessonMapper ;
+    private final SectionMapper sectionMapper ;
     private final FileService fileService;
 
     // BÖLMƏ ƏLAVƏ ETMƏK
     public SectionResponse addSection(Long courseId, SectionRequest request) {
+        if (sectionRepository.existsByCourseIdAndOrderIndex(courseId, request.getOrderIndex())) {
+            throw new RuntimeException("Bu sıra nömrəsi artıq istifadə olunub: " + request.getOrderIndex());
+        }
+
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Kurs tapılmadı"));
         
@@ -40,55 +49,37 @@ public class CourseContentService {
         section.setOrderIndex(order);
         section.setCourse(course);
 
-        return mapToSectionResponse(sectionRepository.save(section));
+        return sectionMapper.toDtoRes(sectionRepository.save(section));
     }
 
     // DƏRS ƏLAVƏ ETMƏK (VİDEO İLE)
-    public LessonResponse addLesson(Long sectionId, String title, String content,
-                                    Integer duration, Integer orderIndex, MultipartFile video) {
+    public LessonResponse addLesson(Long sectionId, LessonRequest request) {
+
+        if (lessonRepository.existsBySectionIdAndOrderIndex(sectionId, request.getOrderIndex())) {
+            throw new RuntimeException("Bu sıra nömrəsi artıq istifadə olunub: " + request.getOrderIndex());
+        }
+
+
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Bölmə tapılmadı"));
         
         checkOwnership(section.getCourse());
 
         // Videonu lokal yaddaşa yazırıq
-        String videoFileName = fileService.saveFile(video);
+        String videoFileName = fileService.saveFile(request.getVideo());
 
-        int order = (orderIndex != null) ? orderIndex : 
+        int order = (request.getOrderIndex() != null) ? request.getOrderIndex() :
                      (int) lessonRepository.countBySectionId(sectionId) + 1;
 
         Lesson lesson = new Lesson();
-        lesson.setTitle(title);
-        lesson.setContent(content);
-        lesson.setDurationInMinutes(duration);
-        lesson.setVideoUrl(videoFileName);
+        lesson.setTitle(request.getTitle());
+        lesson.setContent(request.getContent());
+        lesson.setDurationInMinutes(request.getDurationInMinutes());
+        lesson.setVideoUrl(request.getVideo().getOriginalFilename());
         lesson.setOrderIndex(order);
         lesson.setSection(section);
 
-        return mapToLessonResponse(lessonRepository.save(lesson));
-    }
-
-    // MAPPING METODLARI
-    private SectionResponse mapToSectionResponse(Section section) {
-        return SectionResponse.builder()
-                .id(section.getId())
-                .title(section.getTitle())
-                .orderIndex(section.getOrderIndex())
-                .lessons(section.getLessons() != null ? 
-                         section.getLessons().stream().map(this::mapToLessonResponse).toList() : 
-                         new ArrayList<>())
-                .build();
-    }
-
-    private LessonResponse mapToLessonResponse(Lesson lesson) {
-        return LessonResponse.builder()
-                .id(lesson.getId())
-                .title(lesson.getTitle())
-                .content(lesson.getContent())
-                .durationInMinutes(lesson.getDurationInMinutes())
-                .videoUrl(lesson.getVideoUrl())
-                .orderIndex(lesson.getOrderIndex())
-                .build();
+        return lessonMapper.toDtoLessonRes(lessonRepository.save(lesson));
     }
 
     private void checkOwnership(Course course) {
