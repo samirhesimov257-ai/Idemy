@@ -2,7 +2,7 @@ package com.idemy.controller;
 
 import com.idemy.service.LessonService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +19,9 @@ public class LessonController {
     private final LessonService lessonService;
 
     @GetMapping("/{lessonId}/video")
-    public ResponseEntity<Resource> streamVideo(@PathVariable Long lessonId) {
-        Resource video = lessonService.getLessonVideoResource(lessonId);
-        
+    public ResponseEntity<InputStreamResource> streamVideo(@PathVariable Long lessonId) {
+        InputStreamResource video = new InputStreamResource(lessonService.getLessonVideoStream(lessonId));
+
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("video/mp4")) // Video formatı
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline") // Brauzerdə birbaşa açılması üçün

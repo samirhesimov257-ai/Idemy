@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -32,6 +33,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
         return buildErrorResponse(HttpStatus.FORBIDDEN, "Sizin bu əməliyyatı etmək üçün səlahiyyətiniz yoxdur!");
+    }
+
+    @ExceptionHandler(VideoAccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleVideoAccessDenied(VideoAccessDeniedException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler({S3Exception.class, FileUploadException.class})
+    public ResponseEntity<Map<String, Object>> handleStorageErrors(Exception ex) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     // 4. @Valid xətaları (Məsələn: @NotBlank, @Email yoxlamaları keçməyəndə)

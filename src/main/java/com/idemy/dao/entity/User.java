@@ -44,6 +44,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    private String profileImageUrl;
+
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
     private List<Course> authoredCourses;
 

@@ -1,57 +1,63 @@
 package com.idemy.service;
 
+import com.idemy.exception.FileUploadException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class FileService {
 
-    // Videoların yadda saxlanılacağı qovluq yolu
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final S3Client s3Client;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     public String saveFile(MultipartFile file) {
+        return saveFile(file, "videos");
+    }
+
+    public String saveFile(MultipartFile file, String folder) {
         try {
-            // Qovluq yoxdursa yarat
-            File directory = new File(uploadDir);
-            if (!directory.exists()) directory.mkdirs();
+            String originalName = file.getOriginalFilename() == null ? "file" : file.getOriginalFilename();
+            String fileName = UUID.randomUUID() + "_" + originalName;
+            String objectKey = folder + "/" + fileName;
 
-            // Faylın adını unikal et (UUID ilə)
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir + fileName);
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .contentType(file.getContentType())
+                    .build();
 
-            // Faylı kopyala
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            return fileName; // Bazada saxlamalı olduğumuz adı qaytarır
-        } catch (IOException e) {
-            throw new RuntimeException("Fayl yüklənərkən xəta baş verdi: " + e.getMessage());
+            s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes()));
+            return objectKey;
+        } catch (IOException | SdkException e) {
+            throw new FileUploadException("Fayl S3-ə yüklənərkən xəta baş verdi!", e);
         }
     }
-    public Resource loadFileAsResource(String fileName) {
-        try {
-            Path filePath = Paths.get("uploads/videos/").resolve(fileName).normalize();
-            Resource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new RuntimeException("Video faylı tapılmadı və ya oxuna bilmir!");
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Fayl yolu xətası: " + e.getMessage());
+    public InputStream loadFileAsStream(String objectKey) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .build();
+            ResponseInputStream<GetObjectResponse> stream = s3Client.getObject(getObjectRequest);
+            return stream;
+        } catch (SdkException e) {
+            throw new FileUploadException("S3-dən fayl oxunarkən xəta baş verdi!", e);
         }
     }
 }

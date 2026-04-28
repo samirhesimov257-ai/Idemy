@@ -65,7 +65,7 @@ public class CourseContentService {
         
         checkOwnership(section.getCourse());
 
-        // Videonu lokal yaddaşa yazırıq
+        // Videonu birbaşa S3-ə yazırıq
         String videoFileName = fileService.saveFile(request.getVideo());
 
         int order = (request.getOrderIndex() != null) ? request.getOrderIndex() :
@@ -75,7 +75,7 @@ public class CourseContentService {
         lesson.setTitle(request.getTitle());
         lesson.setContent(request.getContent());
         lesson.setDurationInMinutes(request.getDurationInMinutes());
-        lesson.setVideoUrl(request.getVideo().getOriginalFilename());
+        lesson.setVideoUrl(videoFileName);
         lesson.setOrderIndex(order);
         lesson.setSection(section);
 
