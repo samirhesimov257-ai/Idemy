@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -20,6 +21,8 @@ public class RabbitMQConfig {
     public static final String ENROLLMENT_NOTIFICATIONS_QUEUE = "enrollment.notifications";
     public static final String ENROLLMENT_ROUTING_KEY = "enrollment.notification.created";
 
+    public static final String OTP_NOTIFICATIONS_QUEUE = "otp.notifications";
+
     @Bean
     public TopicExchange enrollmentExchange() {
         return new TopicExchange(ENROLLMENT_EXCHANGE);
@@ -28,6 +31,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue enrollmentNotificationsQueue() {
         return new Queue(ENROLLMENT_NOTIFICATIONS_QUEUE, true);
+    }
+
+    @Bean
+    public Queue otpNotificationsQueue() {
+        return new Queue(OTP_NOTIFICATIONS_QUEUE, true);
     }
 
     @Bean
@@ -47,5 +55,16 @@ public class RabbitMQConfig {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(messageConverter);
         return rabbitTemplate;
+    }
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter
+    ) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+        return factory;
     }
 }

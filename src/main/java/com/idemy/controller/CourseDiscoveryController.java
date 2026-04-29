@@ -27,8 +27,6 @@ public class CourseDiscoveryController {
         return ResponseEntity.ok(courseService.getAllCourses());
     }
 
-
-
     @GetMapping("/search")
     public ResponseEntity<List<CourseResponse>> searchCourses(@RequestParam String keyword) {
         return ResponseEntity.ok(courseMapper.listToDtoList(courseRepository.searchByKeyword(keyword)));

@@ -44,20 +44,20 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    boolean enabled = false;
+
     private String profileImageUrl;
 
     @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
     private List<Course> authoredCourses;
 
-    // Tələbənin qeydiyyatdan keçdiyi kurslar (Day 5-dən)
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL)
     private List<Enrollment> enrollments;
 
-    // İstifadəçinin yazdığı bütün rəylər (Day 6)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Review> reviews;
 
-    // İstifadəçinin dərslərdəki proqresi (Day 6)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserProgress> progressEntries;
 
@@ -69,12 +69,32 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email; // Login üçün email istifadə edəcəyik
+        return email;
     }
 
     @Override
     public String getPassword() {
-        return password; // Sənin yuxarıdakı password field-in
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 
 }

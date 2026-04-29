@@ -23,13 +23,13 @@ public class Lesson {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content; // Dərs haqqında əlavə qeydlər və ya mətn
+    private String content;
 
-    private String videoUrl; // AWS S3-dən gələn video linki burada olacaq
+    private String videoUrl;
 
-    private Duration durationInMinutes; // Dərsin müddəti
+    private Duration durationInMinutes;
 
-    private Integer orderIndex; // Bölmə daxilində neçənci dərsdir
+    private Integer orderIndex;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
