@@ -45,6 +45,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<Map<String, Object>> handleMessagingException(MessagingException ex) {
+        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    }
+
     // 4. @Valid xətaları (Məsələn: @NotBlank, @Email yoxlamaları keçməyəndə)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {

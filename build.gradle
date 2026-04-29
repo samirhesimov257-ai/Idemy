@@ -36,17 +36,21 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'software.amazon.awssdk:s3:2.25.0'
 
-        // Spring Security
-        implementation 'org.springframework.boot:spring-boot-starter-security'
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
-        // JJWT 0.12.5 (Ən son versiya)
-        implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
-        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
-        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' // JSON emalı üçün
+    // JJWT 0.12.5 (Ən son versiya)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' // JSON emalı üçün
 
-        // Digər asılılıqların (Lombok, JPA və s.)
+    // Digər asılılıqların (Lombok, JPA və s.)
 
 }
 

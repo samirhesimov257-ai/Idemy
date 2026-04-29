@@ -6,6 +6,8 @@ import com.idemy.dao.entity.User;
 import com.idemy.dao.repository.CourseRepository;
 import com.idemy.dao.repository.EnrollmentRepository;
 import com.idemy.dao.repository.UserRepository;
+import com.idemy.dto.NotificationDTO;
+import com.idemy.service.messaging.EnrollmentProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final EnrollmentProducer enrollmentProducer;
 
     @Transactional
     public String enrollInCourse(Long courseId) {
@@ -44,6 +47,13 @@ public class EnrollmentService {
         enrollment.setEnrolledAt(LocalDateTime.now());
 
         enrollmentRepository.save(enrollment);
+
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .email(user.getEmail())
+                .courseName(course.getTitle())
+                .build();
+        enrollmentProducer.sendEnrollmentNotification(notificationDTO);
+
         return "Kurs uğurla alındı!";
     }
 }

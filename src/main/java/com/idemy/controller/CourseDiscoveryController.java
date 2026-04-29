@@ -5,6 +5,7 @@ import com.idemy.dao.repository.CourseRepository;
 import com.idemy.dto.responce.CourseDetailResponse;
 import com.idemy.dto.responce.CourseResponse;
 import com.idemy.mapper.CourseMapper;
+import com.idemy.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,13 @@ public class CourseDiscoveryController {
 
     private final CourseRepository courseRepository;
     private  final CourseMapper courseMapper ;
+    private final CourseService courseService;
+    @Operation(summary = "Butun kurslari getirmek ucun")
+    @GetMapping("/all")
+    public ResponseEntity<List<CourseResponse>> getAllCourses() {
+        return ResponseEntity.ok(courseService.getAllCourses());
+    }
+
 
 
     @GetMapping("/search")
@@ -34,12 +42,7 @@ public class CourseDiscoveryController {
     @Operation(summary = "Muellim adina gore kurslarin tapilmasi")
     @GetMapping("/search-by-instructor")
     public ResponseEntity<List<CourseResponse>> searchByInstructor(@RequestParam String name) {
-        List<Course> courses = courseRepository.findByInstructorFullNameContainingIgnoreCase(name);
-
-        // Entity-ləri DTO-ya (Response) çevirib qaytarırıq
-        return ResponseEntity.ok(courses.stream()
-                .map(courseMapper::toDto)
-                .toList());
+        return ResponseEntity.ok(courseService.searchByInstructor(name));
     }
 
     // Kursun bütün detalları (Bölmələr və s.)

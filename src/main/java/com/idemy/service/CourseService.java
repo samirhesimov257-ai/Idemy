@@ -10,6 +10,8 @@ import com.idemy.dto.responce.CourseResponse;
 import com.idemy.mapper.CourseMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +20,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CourseService {
+    private static final String ALL_COURSES_CACHE = "allCourses";
+    private static final String INSTRUCTOR_COURSES_CACHE = "coursesByInstructor";
 
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
     private  final CourseMapper courseMapper ;
 
+    @CacheEvict(cacheNames = {ALL_COURSES_CACHE, INSTRUCTOR_COURSES_CACHE}, allEntries = true)
     public CourseResponse createCourse(CourseCreateRequest request) {
         // 1. Token-dən gələn email vasitəsilə müəllimi tapırıq
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -49,7 +54,19 @@ public class CourseService {
         return courseMapper.listToDtoList(courseRepository.findByInstructorEmail(email));
 
     }
+
+    @Cacheable(cacheNames = ALL_COURSES_CACHE)
+    public List<CourseResponse> getAllCourses() {
+        return courseMapper.listToDtoList(courseRepository.findAll());
+    }
+
+    @Cacheable(cacheNames = INSTRUCTOR_COURSES_CACHE, key = "#name.toLowerCase()")
+    public List<CourseResponse> searchByInstructor(String name) {
+        return courseMapper.listToDtoList(courseRepository.findByInstructorFullNameContainingIgnoreCase(name));
+    }
+
     @Transactional
+    @CacheEvict(cacheNames = {ALL_COURSES_CACHE, INSTRUCTOR_COURSES_CACHE}, allEntries = true)
     public CourseResponse updateCourse(Long id, CourseCreateRequest request) {
         // 1. Kursu tap
         Course course = courseRepository.findById(id)
@@ -70,6 +87,7 @@ public class CourseService {
         return courseMapper.toDto(courseRepository.save(course));
     }
 
+    @CacheEvict(cacheNames = {ALL_COURSES_CACHE, INSTRUCTOR_COURSES_CACHE}, allEntries = true)
     public void deleteCourse(Long id) {
         // 1. Kursu tap
         Course course = courseRepository.findById(id)
