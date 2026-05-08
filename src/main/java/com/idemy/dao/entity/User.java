@@ -61,6 +61,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserProgress> progressEntries;
 
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<WishlistItem> wishlistItems ;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Rolu "ROLE_STUDENT" və ya "ROLE_INSTRUCTOR" kimi qaytarır
@@ -75,21 +78,6 @@ public class User implements UserDetails {
     @Override
     public String getPassword() {
         return password;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
     }
 
     @Override

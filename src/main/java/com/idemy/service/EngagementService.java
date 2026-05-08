@@ -2,6 +2,7 @@ package com.idemy.service;
 
 import com.idemy.dao.entity.*;
 import com.idemy.dao.repository.*;
+import com.idemy.dto.responce.CourseProgressResponse;
 import com.idemy.dto.request.ReviewRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -69,6 +70,18 @@ public class EngagementService {
 
         progressRepository.save(progress);
         return "Dərs bitmiş kimi işarələndi!";
+    }
+
+    @Transactional(readOnly = true)
+    public CourseProgressResponse getCourseProgress(Long courseId) {
+        User user = getCurrentUser();
+        if (!enrollmentRepository.existsByStudentIdAndCourseId(user.getId(), courseId)) {
+            throw new RuntimeException("Bu kurs üçün progress görmək icazəniz yoxdur.");
+        }
+        long totalLessons = lessonRepository.countBySection_Course_Id(courseId);
+        long completedLessons = progressRepository.countByUserIdAndLesson_Section_Course_Id(user.getId(), courseId);
+        double percentage = totalLessons == 0 ? 0.0 : (completedLessons * 100.0) / totalLessons;
+        return new CourseProgressResponse(percentage, completedLessons, totalLessons);
     }
 
     private User getCurrentUser() {

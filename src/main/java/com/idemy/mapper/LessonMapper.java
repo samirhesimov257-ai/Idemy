@@ -20,7 +20,7 @@ public class LessonMapper {
 
     public List<LessonResponse> toListDtoLessonRes (List<Lesson> lessons ){
         if (lessons == null) {
-            throw new IllegalArgumentException("Lessons list cannot be null");
+            return List.of();
         }
         return lessons.stream()
                 .map(this::toDtoLessonRes)

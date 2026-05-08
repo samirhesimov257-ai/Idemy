@@ -22,7 +22,7 @@ public class SectionMapper {
 
     public List<SectionResponse> toListDtoSectionRes(List<Section> sections ){
         if (sections == null) {
-            throw new IllegalArgumentException("Lessons list cannot be null");
+            return List.of();
         }
         return sections.stream()
                 .map(this::toDtoRes)

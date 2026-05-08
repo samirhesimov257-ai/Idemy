@@ -26,7 +26,7 @@ public class Course {
     @Size(min = 10, max = 200, message = "Kursun adı 10-200 simvol arası olmalıdır")
     private String title;
 
-    @Column(columnDefinition = "TEXT") // Uzun təsvirlər üçün
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @DecimalMin(value = "0.0", inclusive = true, message = "Qiymət mənfi ola bilməz")
@@ -42,7 +42,11 @@ public class Course {
     @OrderBy("orderIndex ASC")
     private List<Section> sections;
 
+    @OneToMany(mappedBy ="course",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<WishlistItem> wishlistItems ;
+
     public Course(Long courseId) {
+        this.id = courseId;
     }
 
     @PrePersist

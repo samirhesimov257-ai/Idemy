@@ -20,7 +20,7 @@ public class CourseMapper {
                 .id(course.getId())
                 .title(course.getTitle())
                 .description(course.getDescription())
-                .instructorName(course.getDescription())
+                .instructorName(course.getInstructor() != null ? course.getInstructor().getFullName() : null)
                 .sections(sectionMapper.toListDtoSectionRes(course.getSections()))
                 .build();
     }

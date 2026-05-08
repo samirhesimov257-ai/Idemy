@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,14 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.access-expiration-ms:3600000}")
+    private long accessExpirationMs;
+
+    @Value("${jwt.refresh-expiration-ms:604800000}")
+    private long refreshExpirationMs;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -36,12 +45,12 @@ public class JwtService {
 
     // Access Token yaradan metod (15 dəqiqə)
     public String generateAccessToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, 1000 * 60 * 60);
+        return buildToken(new HashMap<>(), userDetails, accessExpirationMs);
     }
 
     // Refresh Token yaradan metod (məsələn, 7 gün)
     public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, 1000 * 60 * 60 * 24 * 7);
+        return buildToken(new HashMap<>(), userDetails, refreshExpirationMs);
     }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
@@ -56,18 +65,17 @@ public class JwtService {
 
 
     private SecretKey getSignInKey() {
-        String SECRET_KEY = "sfkjdflkejgnrbgnhsfdskskgdffkeavfejshfehffdjknjknjknjknjknj";
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     // 1. Tokenin vaxtının bitib-bitmədiyini yoxlayır
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
     // 2. Tokendən vaxtı (Expiration date) çıxarır
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 

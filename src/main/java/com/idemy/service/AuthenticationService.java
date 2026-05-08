@@ -4,6 +4,7 @@ import com.idemy.dao.entity.User;
 import com.idemy.dao.repository.UserRepository;
 import com.idemy.dto.OtpMessage;
 import com.idemy.dto.request.LoginRequest;
+import com.idemy.dto.request.RefreshTokenRequest;
 import com.idemy.dto.request.RegisterRequest;
 import com.idemy.dto.request.VerifyOtpRequest;
 import com.idemy.dto.responce.AuthenticationResponse;
@@ -11,10 +12,14 @@ import com.idemy.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.idemy.service.messaging.OtpProducer;
+
+import java.time.Instant;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class AuthenticationService {
 
     private final OtpService otpService;
     private final OtpProducer otpProducer;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public void register(RegisterRequest request) {
 
@@ -98,9 +104,39 @@ public class AuthenticationService {
         // Refresh token-i bazaya da yadda saxla (yeni metod yazmalısan bunun üçün)
 //        saveRefreshToken(user, refreshToken);
         return AuthenticationResponse.builder()
-                .accessToken(accessToken + "\n")
+                .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+        String userEmail = jwtService.extractUsername(refreshToken);
+        if (userEmail == null) {
+            throw new RuntimeException("Refresh token etibarsızdır.");
+        }
+        UserDetails userDetails = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("İstifadəçi tapılmadı: " + userEmail));
+
+        if (!jwtService.isTokenValid(refreshToken, userDetails) || tokenBlacklistService.isBlacklisted(refreshToken)) {
+            throw new RuntimeException("Refresh token etibarsız və ya müddəti bitib.");
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(userDetails);
+        return AuthenticationResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public String logout(String bearerToken) {
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            throw new RuntimeException("Authorization header düzgün göndərilməyib.");
+        }
+        String token = bearerToken.substring(7);
+        Date expiration = jwtService.extractExpiration(token);
+        tokenBlacklistService.blacklist(token, expiration.toInstant().isAfter(Instant.now()) ? expiration.toInstant() : Instant.now());
+        return "Çıxış uğurla tamamlandı.";
     }
 //    public String login(LoginRequest request) {
 //        // 1. Email və şifrəni yoxla (Düzgün deyilsə Exception atacaq)

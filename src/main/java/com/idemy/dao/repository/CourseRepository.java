@@ -1,7 +1,6 @@
 package com.idemy.dao.repository;
 
 import com.idemy.dao.entity.Course;
-import com.idemy.dto.responce.CourseResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +24,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByInstructorFullNameContainingIgnoreCase(String fullName);
 
     // Müəyyən qiymət aralığında kurslar
-    List<CourseResponse> findByPriceBetween(BigDecimal min, BigDecimal max);
+    List<Course> findByPriceBetween(BigDecimal min, BigDecimal max);
 
 }
